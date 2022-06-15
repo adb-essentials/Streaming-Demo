@@ -42,6 +42,70 @@ df_sensorInfo = spark.read.option("header", True)\
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC ### Download Device Thresholds CSV and Load Delta Table
+
+# COMMAND ----------
+
+# %sql 
+# -- Query used to create these values
+# WITH CTE AS (
+#   select
+#     deviceName,
+#     AVG(sensor5_avg) AS sensor5_Avg,
+#     MAX(sensor5_avg) AS sensor5_Max,
+#     STDDEV(sensor5_avg) AS sensor5_Std
+#   from
+#     streamingdemo.sensorStreamGoldAggregates
+#   group by
+#     deviceName
+# )
+# SELECT
+#   deviceName,
+# --   sensor5_Max,
+#   sensor5_Max - (sensor5_Max - (sensor5_Max *.97)) AS Threshold
+# FROM
+#   CTE
+
+# COMMAND ----------
+
+# MAGIC %sh
+# MAGIC # Pull CSV file from url
+# MAGIC wget -nc https://raw.githubusercontent.com/adb-essentials/Streaming-Demo/main/Reference%20Data/DeviceThresholds.csv
+
+# COMMAND ----------
+
+# MAGIC %sh
+# MAGIC ls
+
+# COMMAND ----------
+
+dbutils.fs.cp("file:/databricks/driver/DeviceThresholds.csv", "/mnt/streamingdemo/temp/DeviceThresholds.csv")
+
+# COMMAND ----------
+
+df_sensorThresholds = spark.read.option("header", True)\
+  .option("inferSchema",True)\
+  .option("ignoreTrailingWhitespace", True)\
+  .csv("/mnt/streamingdemo/temp/DeviceThresholds.csv")\
+  .write.format("delta").mode("overwrite").save("/mnt/streamingdemo/data/sensorThresholdsBronze/")
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC DROP TABLE IF EXISTS streamingdemo.sensorThresholdsBronze;
+# MAGIC 
+# MAGIC CREATE TABLE streamingdemo.sensorThresholdsBronze
+# MAGIC USING DELTA 
+# MAGIC LOCATION "/mnt/streamingdemo/data/sensorThresholdsBronze/";
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT * FROM streamingdemo.sensorThresholdsBronze
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC ### Create Date dimension
 
 # COMMAND ----------
@@ -108,9 +172,13 @@ df_sensorInfo = spark.read.option("header", True)\
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC OPTIMIZE streamingdemo.sensorInfoBronze
+# MAGIC OPTIMIZE streamingdemo.sensorInfoBronze;
+# MAGIC OPTIMIZE streamingdemo.sensorThresholdsBronze;
+# MAGIC OPTIMIZE streamingdemo.dimDate;
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC OPTIMIZE streamingdemo.dimDate
+# MAGIC ANALYZE TABLE streamingdemo.sensorInfoBronze COMPUTE STATISTICS;
+# MAGIC ANALYZE TABLE streamingdemo.sensorThresholdsBronze COMPUTE STATISTICS;
+# MAGIC ANALYZE TABLE streamingdemo.dimDate COMPUTE STATISTICS;

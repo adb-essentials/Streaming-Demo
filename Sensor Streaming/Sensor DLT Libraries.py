@@ -5,7 +5,7 @@
 
 import mlflow
 
-model_uri = "models:/mcSensorModel/production"
+model_uri = "models:/SensorModel/2"
 sensor_predictor = mlflow.pyfunc.spark_udf(spark, model_uri, result_type='double', env_manager="conda")
 
 #sensor_predictor = mlflow.pyfunc.spark_udf(spark, "runs:/dd9a3819646f4bb998e2e4f7d802b5c3/model",result_type = 'double')

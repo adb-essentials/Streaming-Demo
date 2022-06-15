@@ -1,13 +1,15 @@
 # Databricks notebook source
 # MAGIC %md
 # MAGIC # Azure Databricks Streaming for Data Engineers
-# MAGIC Welcome to the quickstart lab for data engineers on Azure Databricks! Over the course of this notebook, you will use a real-world dataset and learn how to:
+# MAGIC Welcome to the streaming lab for data engineers on Azure Databricks! Over the course of this notebook, you will use a real-world dataset and learn how to:
 # MAGIC 1. Access your enterprise data lake in Azure using Databricks
-# MAGIC 2. Transform and store your data in a reliable and performant Delta Lake
-# MAGIC 3. Use Update,Delete,Merge,Schema Evolution and Time Travel Capabilities, CDF (Change Data Feed) of Delta Lake
+# MAGIC 2. Build a ML model on sensor data so that you can use the model for stream scoring
+# MAGIC 3. Stream, transform, and store your data in a reliable and performant Delta Lake
+# MAGIC 4. Perform common streaming patterns like joining to other tables, applying a machine learning model, performing aggregations, and evaluating alerts
+# MAGIC 5. Create streaming dashboards using tools like Power BI
 # MAGIC 
 # MAGIC ## The Use Case
-# MAGIC We will analyze public subscriber data from a popular Korean music streaming service called KKbox stored in Azure Blob Storage. The goal of the notebook is to answer a set of business-related questions about our business, subscribers and usage. 
+# MAGIC We will ingest and transform IoT device data coming from several locations in the US.  The IoT data is somewhat generic, so it could represent devices on the factory floor or even call center detail records.  
 
 # COMMAND ----------
 
@@ -36,11 +38,19 @@ run = dbutils.notebook.run("/Streaming-Demo/Setup Notebooks/00 - Setup Storage",
 # COMMAND ----------
 
 # DBTITLE 1,Delete Existing Files and Create Database
-spark.sql('CREATE DATABASE IF NOT EXISTS streamingdemo')
-
-dbutils.fs.rm("/mnt/streamingdemo/data/sensorStreamBronze_training", True)
+from pyspark.sql.functions import *
+from pyspark.sql.types import *
+import mlflow
 
 schema = spark.read.format("json").load("/mnt/streamingdemo/IoT_Ingest/file2013-11-01 00:00:00.json").schema
+
+spark.sql('DROP DATABASE IF EXISTS streamingdemo CASCADE')
+
+dbutils.fs.rm("dbfs:/mnt/streamingdemo/data/", recurse=True)
+dbutils.fs.rm("dbfs:/mnt/streamingdemo/cp/", recurse=True)
+dbutils.fs.rm("dbfs:/mnt/streamingdemo/temp/", recurse=True)
+
+spark.sql('CREATE DATABASE IF NOT EXISTS streamingdemo')
 
 # COMMAND ----------
 
@@ -72,6 +82,11 @@ df = (
     .option('path', '/mnt/streamingdemo/data/sensorStreamBronze_training')
     .saveAsTable('StreamingDemo.sensorStreamBronze_training')
 )
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT count(1) FROM StreamingDemo.sensorStreamBronze_training--33,599,906
 
 # COMMAND ----------
 
@@ -185,9 +200,5 @@ client.update_registered_model(
 # COMMAND ----------
 
 # MAGIC %md ### Model Serving
-# MAGIC Now that the model is in Production we are ready for our next step - Model Serving
+# MAGIC Now that the model is in Production we are ready for our next step - Model Serving.  
 # MAGIC For this workshop we will serve the model in the streaming pipeline
-
-# COMMAND ----------
-
-

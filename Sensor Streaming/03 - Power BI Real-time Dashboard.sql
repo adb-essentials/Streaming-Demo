@@ -1,15 +1,112 @@
 -- Databricks notebook source
 -- MAGIC %md
--- MAGIC # Azure Databricks Quickstart for Data Engineers on Delta Live Tables
--- MAGIC Welcome to the quickstart lab for data engineers on Azure Databricks for Delta Live Tables (DLT)! Over the course of this notebook, you will use a real-world dataset and learn how to:
--- MAGIC 1. Create a DLT notebook with Data Quality rules
--- MAGIC 2. Create a DLT Pipelines and run it
--- MAGIC 3. Connect Power BI to your DLT database using Databrick SQL
+-- MAGIC # Azure Databricks Quickstart for Data Analysts
+-- MAGIC Welcome to the quickstart lab for data analysts on Azure Databricks! Over the course of this notebook, you will use a real-world dataset and learn how to:
+-- MAGIC 1. Access your enterprise Lakehouse in Azure using Databricks SQL
+-- MAGIC 2. Explore data sets using SQL powered by Photon
 -- MAGIC 
 -- MAGIC ## The Use Case
--- MAGIC We will analyze public subscriber data from a popular Korean music streaming service called KKbox stored in Azure Blob Storage. The goal of the notebook is create a DLT pipeline which will load a star schema in the Lakehouse to be used with Power BI and other BI tools through Databricks SQL. 
+-- MAGIC We will analyze public subscriber data from a popular Korean music streaming service called KKbox stored in Azure Blob Storage. The goal of the notebook is to answer a set of business-related questions about our business, subscribers and usage. 
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ##Initial Set-up
+
+-- COMMAND ----------
+
+-- MAGIC %py
+-- MAGIC dbutils.widgets.text("Databricks_Token", "", "Databricks_Token")
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ##Obtain a Personal Access Token and save it to the Databricks_Token widget  
+-- MAGIC 1.Navigate to Settings -> User Settings  
+-- MAGIC <img src="https://publicimg.blob.core.windows.net/images/PAT1.png" width="400">
 -- MAGIC 
--- MAGIC ***This DLT pipeline will not work unless you have already mounted your storage account. Refer to notebook "01 - Data Engineer" for mounting instructions.***
+-- MAGIC 2.Under Access tokens -> Click Generate new token  
+-- MAGIC <img src="https://publicimg.blob.core.windows.net/images/PAT2.png" width="300">
+-- MAGIC 
+-- MAGIC 3.Enter an optional description under comment -> Click Generate  
+-- MAGIC <img src="https://publicimg.blob.core.windows.net/images/PAT3.png" width="400">
+-- MAGIC 
+-- MAGIC 4.Copy your token value to the clipboard -> Click Done  
+-- MAGIC <img src="https://publicimg.blob.core.windows.net/images/PAT4.png" width="400">
+-- MAGIC 
+-- MAGIC 5.Save your token value to the Databricks_Token widget  
+-- MAGIC <img src="https://publicimg.blob.core.windows.net/images/PAT5.png" width="600">
+-- MAGIC 
+-- MAGIC You'll use the Databricks_Token again in the next lab
+
+-- COMMAND ----------
+
+-- MAGIC %py
+-- MAGIC Databricks_Token = dbutils.widgets.get("Databricks_Token")
+
+-- COMMAND ----------
+
+-- DBTITLE 1,Create Lab Queries
+-- MAGIC %run "/Streaming-Demo/Setup Notebooks/00 - Create Queries" $Databricks_Token = $Databricks_Token
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC # Overview and Getting Connected to Dataricks SQL
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ### Databricks SQL is a DW and BI Engine directly on the Lakehouse  
+-- MAGIC <img src="https://publicimg.blob.core.windows.net/images/DBSQL1.png" width="1200">
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ### Open a new browser tab. In the lefthand navigation, change the persona switcher to SQL  
+-- MAGIC 
+-- MAGIC <img src="https://publicimg.blob.core.windows.net/images/DBSQL2.png" width="300">
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ### Compute in Databricks SQL is called SQL Endpoints  
+-- MAGIC SQL Endpoints are compute clusters optimized for DW and BI queries on the Lakehouse  
+-- MAGIC They are powered by Delta and Photon - a C++ vectorized engine that is really fast  
+-- MAGIC Photon is __*FREE*__ in Databricks SQL!
+-- MAGIC 
+-- MAGIC 
+-- MAGIC <img src="https://publicimg.blob.core.windows.net/images/DBSQL3.png" width="1200">
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ### Browse your databases and tables using Data Explorer
+-- MAGIC In Data Explorer you can see the objects you have access to  
+-- MAGIC For each table/view, you can view the size, schema, sample data, table details, and even version history of the table  
+-- MAGIC If you are an admin, you can even manage permissions to the databases and tables in Data Explorer  
+-- MAGIC 
+-- MAGIC 
+-- MAGIC <img src="https://publicimg.blob.core.windows.net/images/DBSQL4.png" width="1200">
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ### The SQL Editor is a powerful SQL IDE built directly into Databricks SQL
+-- MAGIC Browse and search for schema and table objects, view metadata, and explore tables/views  
+-- MAGIC Use functionality like intellisense, view past query execution history, create data visualization capabilities, and even download data  
+-- MAGIC 
+-- MAGIC <img src="https://publicimg.blob.core.windows.net/images/DBSQL5.png" width="500">
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ### Queries are SQL code, results, and visualizations that you can save
+-- MAGIC Create SQL quieres, save them, and share them with your team  
+-- MAGIC View query results, or create data visualizations directly in the UI  
+-- MAGIC Schedule refreshes of your queries so that the results are always up to date  
+-- MAGIC 
+-- MAGIC <img src="https://publicimg.blob.core.windows.net/images/DBSQL6.png" width="1200">
 
 -- COMMAND ----------
 
