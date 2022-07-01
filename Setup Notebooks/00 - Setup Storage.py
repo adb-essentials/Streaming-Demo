@@ -46,3 +46,4 @@ dbutils.fs.mount(
     f"fs.azure.account.key.{BLOB_ACCOUNT}.blob.core.windows.net":ACCOUNT_KEY
   }
 )
+

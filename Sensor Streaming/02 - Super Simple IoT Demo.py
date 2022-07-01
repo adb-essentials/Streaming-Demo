@@ -84,7 +84,7 @@ spark.sparkContext.setLocalProperty("spark.scheduler.pool", "pool1")
   rawDf.writeStream
     .format('delta')
     .queryName('sensorStreamBronze')
-    .trigger(processingTime='3 seconds')
+    .trigger(processingTime='10 seconds')
  #   .trigger(once=True)
     .option("checkpointLocation", "/mnt/streamingdemo/cp/sensorStreamBronze")
     .option('path', '/mnt/streamingdemo/data/sensorStreamBronze')
@@ -119,7 +119,7 @@ dateDf = spark.table('streamingdemo.dimDate')
 combinedDf = bronzeDf.join(infoDf, 'device').join(dateDf, to_date(bronzeDf.datetime) == dateDf.CalendarDate)
 
 #Define ML Model
-model_uri = "models:/SensorModel/1"
+model_uri = "models:/SensorModel/2"
 sensor_predictor = mlflow.pyfunc.spark_udf(spark, model_uri, result_type='double')
 
 #Select/Transform appropriate columns
@@ -153,7 +153,7 @@ spark.sparkContext.setLocalProperty("spark.scheduler.pool", "pool2")
   combinedDf.writeStream
     .format('delta')
     .queryName('sensorStreamSilver')
-    .trigger(processingTime='3 seconds')
+    .trigger(processingTime='10 seconds')
 #   .trigger(once=True)
     .option("checkpointLocation", "/mnt/streamingdemo/cp/sensorStreamSilver")
     .option('path', '/mnt/streamingdemo/data/sensorStreamSilver')
@@ -185,9 +185,6 @@ spark.sparkContext.setLocalProperty("spark.scheduler.pool", "pool2")
 
 # COMMAND ----------
 
-# Dale, should we have a reference table and do some alerts/threshold detection
-# and/or aggregateshttps://adb-6207046991473636.16.azuredatabricks.net/?o=6207046991473636#
-
 from pyspark.sql.functions import avg, window
 spark.sparkContext.setLocalProperty("spark.scheduler.pool", "pool3")
 
@@ -195,9 +192,9 @@ silverDf = spark.readStream.table("streamingdemo.sensorStreamSilver")
 
 silverDf = (
         silverDf
-        .withWatermark("datetime", "20 seconds")
+        .withWatermark("datetime", "1 minute")
         .groupBy(
-            window("datetime", "15 seconds"),
+            window("datetime", "30 seconds"),
             "deviceName"
         )
        .agg(
@@ -216,7 +213,7 @@ silverDf.createOrReplaceTempView("goldStream")
   silverDf.writeStream
     .format('delta')
     .queryName('sensorStreamGold')
-    .trigger(processingTime='3 seconds')
+    .trigger(processingTime='10 seconds')
 #   .trigger(once=True)
     .outputMode("complete")
     .option("checkpointLocation", "/mnt/streamingdemo/cp/sensorStreamGoldAggregates")
@@ -227,7 +224,8 @@ silverDf.createOrReplaceTempView("goldStream")
 # COMMAND ----------
 
 # MAGIC %sql 
-# MAGIC select * from streamingdemo.sensorStreamGoldAggregates
+# MAGIC select count(distinct deviceName) 
+# MAGIC from streamingdemo.sensorStreamGoldAggregates
 
 # COMMAND ----------
 
@@ -246,4 +244,53 @@ silverDf.createOrReplaceTempView("goldStream")
 
 # COMMAND ----------
 
+# MAGIC %sql 
+# MAGIC SELECT
+# MAGIC   A.window.start,
+# MAGIC   A.window.end,
+# MAGIC   A.*,
+# MAGIC   T.Threshold
+# MAGIC FROM
+# MAGIC   streamingdemo.sensorStreamGoldAggregates A
+# MAGIC   INNER JOIN streamingdemo.sensorthresholdsbronze T ON A.deviceName = T.deviceName
+# MAGIC WHERE
+# MAGIC   A.sensor5_avg > T.Threshold
+# MAGIC ORDER BY deviceName
 
+# COMMAND ----------
+
+spark.sparkContext.setLocalProperty("spark.scheduler.pool", "pool4")
+
+goldDf = spark.readStream.option("ignoreChanges", "true").table("streamingdemo.sensorStreamGoldAggregates")
+goldDf.createOrReplaceTempView("goldAggregates")
+
+goldAlertsDf = spark.sql("""
+SELECT
+  A.window.start,
+  A.window.end,
+  A.*,
+  T.Threshold
+FROM
+  goldAggregates A
+  INNER JOIN streamingdemo.sensorthresholdsbronze T ON A.deviceName = T.deviceName
+WHERE
+  A.sensor5_avg > T.Threshold
+""")
+
+# COMMAND ----------
+
+(
+  goldAlertsDf.writeStream
+    .format('delta')
+    .queryName('sensorStreamGoldAlerts')
+    .trigger(processingTime='10 seconds')
+#   .trigger(once=True)
+    .option("checkpointLocation", "/mnt/streamingdemo/cp/sensorStreamGoldAlerts")
+    .option('path', '/mnt/streamingdemo/data/sensorStreamGoldAlerts')
+    .toTable("streamingdemo.sensorStreamGoldAlerts")
+)
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT * FROM streamingdemo.sensorStreamGoldAlerts

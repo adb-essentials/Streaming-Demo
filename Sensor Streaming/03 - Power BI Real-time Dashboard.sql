@@ -1,12 +1,28 @@
 -- Databricks notebook source
 -- MAGIC %md
--- MAGIC # Azure Databricks Quickstart for Data Analysts
--- MAGIC Welcome to the quickstart lab for data analysts on Azure Databricks! Over the course of this notebook, you will use a real-world dataset and learn how to:
+-- MAGIC # Azure Databricks Streaming for Data Analysts and BI Developers
+-- MAGIC Welcome to the streaming lab for data analysts and BI developers on Azure Databricks! Over the course of this notebook, you will use a real-world dataset and learn how to:
 -- MAGIC 1. Access your enterprise Lakehouse in Azure using Databricks SQL
--- MAGIC 2. Explore data sets using SQL powered by Photon
+-- MAGIC 2. Explore data sets with SQL using SQL Endpoints powered by Photon
+-- MAGIC 3. Load your streaming tables into Power BI to create a real-time streaming dashboard
 -- MAGIC 
 -- MAGIC ## The Use Case
--- MAGIC We will analyze public subscriber data from a popular Korean music streaming service called KKbox stored in Azure Blob Storage. The goal of the notebook is to answer a set of business-related questions about our business, subscribers and usage. 
+-- MAGIC IoT device data coming from several locations in the US has been ingested and transformed. The IoT data is somewhat generic, so it could represent devices on the factory floor or even call center detail records. We will explore the IoT data directly in the Databricks SQL IDE using SQL Endpoints powered by Photon. We will then load the data into Power BI for reporting.  
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ###Serve Silver and Gold Delta Lake tables through Databricks SQL to Power BI
+-- MAGIC </br>
+-- MAGIC <img src="https://mcg1stanstor00.blob.core.windows.net/images/demos/SimpleIoT/sql2.png" alt="Data Flow" width="400">
+-- MAGIC </br></br>
+-- MAGIC 
+-- MAGIC Cleansed, scored, and aggregated data is pulled out of the Silter and Gold Delta tables and then:
+-- MAGIC 
+-- MAGIC 1. is immediately available in real-time to BI tools and other applications via Databricks SQL
+-- MAGIC 2. Delta Lake and Databricks SQL provide a complete separation of compute and storage
+-- MAGIC 3. so streaming pipelines can continuously be updating the streaming Delta Lake tables and Databricks SQL can consume them without any conflicts
+-- MAGIC 4. BI tools like Power BI can consume the streaming data through Databricks SQL using Automatic Page Refresh
 
 -- COMMAND ----------
 
@@ -87,7 +103,7 @@
 -- MAGIC If you are an admin, you can even manage permissions to the databases and tables in Data Explorer  
 -- MAGIC 
 -- MAGIC 
--- MAGIC <img src="https://publicimg.blob.core.windows.net/images/DBSQL4.png" width="1200">
+-- MAGIC <img src="https://publicimg.blob.core.windows.net/images/DBSQL4.1.png" width="1200">
 
 -- COMMAND ----------
 
@@ -96,7 +112,7 @@
 -- MAGIC Browse and search for schema and table objects, view metadata, and explore tables/views  
 -- MAGIC Use functionality like intellisense, view past query execution history, create data visualization capabilities, and even download data  
 -- MAGIC 
--- MAGIC <img src="https://publicimg.blob.core.windows.net/images/DBSQL5.png" width="500">
+-- MAGIC <img src="https://publicimg.blob.core.windows.net/images/DBSQL5.1.png" width="500">
 
 -- COMMAND ----------
 
@@ -106,7 +122,7 @@
 -- MAGIC View query results, or create data visualizations directly in the UI  
 -- MAGIC Schedule refreshes of your queries so that the results are always up to date  
 -- MAGIC 
--- MAGIC <img src="https://publicimg.blob.core.windows.net/images/DBSQL6.png" width="1200">
+-- MAGIC <img src="https://publicimg.blob.core.windows.net/images/DBSQL6.1.png" width="1200">
 
 -- COMMAND ----------
 
@@ -121,7 +137,7 @@
 -- MAGIC 
 -- MAGIC To help with all of the complexities, you can use DLT to develop, model, and manage the transformations, pipelines, and Delta Lake tables that will be used by Databricks SQL and Power BI.  
 -- MAGIC 
--- MAGIC <img src="https://publicimg.blob.core.windows.net/images/DLT7.png" width="1200">
+-- MAGIC <img src="https://publicimg.blob.core.windows.net/images/DLT7.1.png" width="1200">
 
 -- COMMAND ----------
 

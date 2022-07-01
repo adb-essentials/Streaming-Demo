@@ -137,9 +137,9 @@ summary = automl.regress(
 
 # MAGIC %md #### Register the model with the MLflow Model Registry
 # MAGIC 
-# MAGIC Now that a ML model has been trained and tracked with MLflow, the next step is to register it with the MLflow Model Registry. You can register and manage models using the MLflow UI (Workflow 1) or the MLflow API (Workflow 2).
+# MAGIC Now that a ML model has been trained and tracked with MLflow, the next step is to register it with the MLflow Model Registry. You can register and manage models using the MLflow UI (Workflow 1) or the MLflow API (Workflow 2).  In this notebook, we're going to use Workflow 2.  
 # MAGIC 
-# MAGIC Follow the instructions for your preferred workflow (UI or API) to register your forecasting model, add rich model descriptions, and perform stage transitions.
+# MAGIC <img src="https://publicimg.blob.core.windows.net/images/MLflow.png" width="1000">
 
 # COMMAND ----------
 
